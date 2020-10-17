@@ -1,11 +1,15 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.web.WebEngine;
@@ -15,8 +19,8 @@ import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,10 +30,12 @@ public class Main extends Application {
     private TextField word;
     @FXML
     private ListView<String> listWord;
+    private ListView<String> lisCheck;
     @FXML
     private WebView definitionWord;
     private WebEngine webEngine;
-
+    @FXML
+    private Button search;
     static Map<String, String> myTranslate = new TreeMap<String, String>();
     static final String DATA_FILE_PATH = "C:\\Users\\ASUS\\IdeaProjects\\dictionaryyyyy\\src\\sample\\E_V.txt";
     static final String SPLITTING_CHARACTERS = "<html>";
@@ -50,15 +56,22 @@ public class Main extends Application {
             return myTranslate.get(key);
         return "Not Found";
     }
+    @FXML
+    private ObservableList<String> observableList = FXCollections.observableList(new ArrayList<String>());
     public void submit(ActionEvent event){
         String textSearch = word.getText();
-        System.out.println(textSearch);
         Pattern pattern = Pattern.compile("\\b"+textSearch, Pattern.CASE_INSENSITIVE);
+        int check = 0;
         for(String key : myTranslate.keySet()) {
             Matcher matcher = pattern.matcher(key);
             if(matcher.find()){
                 System.out.println(key);
-                listWord.getItems().addAll(key);
+                if(!observableList.isEmpty() && check == 0) {
+                    observableList.clear();
+                    check =1;
+                }
+                observableList.add(key);
+                listWord.setItems(observableList);
             }
         }
         listWord.setOnMouseClicked(event1 -> {
@@ -69,9 +82,6 @@ public class Main extends Application {
             webEngine.loadContent(content);
         });
     }
-
-
-
     @Override
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
@@ -79,6 +89,9 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root, 1077, 552));
         primaryStage.show();
         insertFromFile();
+        //search.setOnAction(event1 -> {
+        //    System.out.println(word.getText());
+        //});
     }
     public static void main(String[] args) {
         launch(args);
