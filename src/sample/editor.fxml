@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="431.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Main">
+   <children>
+      <TextField fx:id="editWord" layoutX="34.0" layoutY="42.0" prefHeight="25.0" prefWidth="288.0" />
+      <TextArea fx:id="editMeaning" layoutX="34.0" layoutY="113.0" prefHeight="116.0" prefWidth="288.0" />
+      <Button fx:id="saveEdit" layoutX="336.0" layoutY="85.0" mnemonicParsing="false" onAction="#saveEdit" prefHeight="43.0" prefWidth="80.0" text="Save" />
+      <Label layoutX="34.0" layoutY="6.0" prefHeight="25.0" prefWidth="243.0" text="English word" />
+      <Label layoutX="34.0" layoutY="77.0" text="Meaning" />
+   </children>
+</AnchorPane>
