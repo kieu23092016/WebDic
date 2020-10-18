@@ -38,6 +38,7 @@
                 </HBox>
                 <ListView fx:id="listWord" prefHeight="360.0" prefWidth="536.0" GridPane.rowIndex="1" />
                 <WebView fx:id="definitionWord" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Button mnemonicParsing="false" onAction="#delete" prefHeight="39.0" prefWidth="92.0" text="Delete" GridPane.columnIndex="1" />
             </children>
         </GridPane>
     </children>

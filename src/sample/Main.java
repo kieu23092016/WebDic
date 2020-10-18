@@ -1,7 +1,6 @@
 package sample;
 
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -9,9 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -20,7 +17,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,8 +33,13 @@ public class Main extends Application {
     @FXML
     private Button search;
     static Map<String, String> myTranslate = new TreeMap<String, String>();
-    static final String DATA_FILE_PATH = "C:\\Users\\ASUS\\IdeaProjects\\dictionaryyyyy\\src\\sample\\E_V.txt";
+    static final String DATA_FILE_PATH = "D:\\clone\\WebDic\\src\\sample\\E_V.txt";
     static final String SPLITTING_CHARACTERS = "<html>";
+    private ObservableList<String> observableList = FXCollections.observableList(new ArrayList<String>());
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     public void insertFromFile() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE_PATH));
@@ -51,49 +52,82 @@ public class Main extends Application {
         }
         reader.close();
     }
+
     public String dictionaryLookup(String key) {
         if (myTranslate.containsKey(key))
             return myTranslate.get(key);
         return "Not Found";
     }
-    @FXML
-    private ObservableList<String> observableList = FXCollections.observableList(new ArrayList<String>());
+
     public void submit(ActionEvent event){
-        String textSearch = word.getText();
-        Pattern pattern = Pattern.compile("\\b"+textSearch, Pattern.CASE_INSENSITIVE);
-        int check = 0;
-        for(String key : myTranslate.keySet()) {
-            Matcher matcher = pattern.matcher(key);
-            if(matcher.find()){
-                System.out.println(key);
-                if(!observableList.isEmpty() && check == 0) {
-                    observableList.clear();
-                    check =1;
+        if (!word.getText().isEmpty()){
+            String textSearch = word.getText();
+            Pattern pattern = Pattern.compile("\\b"+textSearch, Pattern.CASE_INSENSITIVE);
+            if(!observableList.isEmpty()) {
+                observableList.clear();
+            }
+            for(String key : myTranslate.keySet()) {
+                Matcher matcher = pattern.matcher(key);
+                if(matcher.find()){
+                    System.out.println(key);
+                    observableList.add(key);
+                    listWord.setItems(observableList);
                 }
-                observableList.add(key);
-                listWord.setItems(observableList);
             }
         }
-        listWord.setOnMouseClicked(event1 -> {
-            webEngine = definitionWord.getEngine();
-            String html ="<html><h1>Hello</h1><html>";
-            String key = listWord.getSelectionModel().getSelectedItem();
-            String content = dictionaryLookup(key);
-            webEngine.loadContent(content);
-        });
     }
+
+    public void delete(ActionEvent event) {
+            String key = listWord.getSelectionModel().getSelectedItem();
+            if (!key.isEmpty()){
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Delete word.");
+                alert.setHeaderText("Are you sure you want to remove this word?");
+                alert.setContentText(key);
+
+                Optional<ButtonType> optionalButtonType = alert.showAndWait();
+                Alert child_alert = new Alert(Alert.AlertType.INFORMATION);
+                if (optionalButtonType.get() == ButtonType.OK) {
+                    myTranslate.remove(key);
+                    observableList.remove(key);
+                    webEngine = definitionWord.getEngine();
+                    webEngine.loadContent("");
+
+                    child_alert.setHeaderText("Delete Successfully!");
+                    child_alert.showAndWait();
+                }
+            }
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Dictionary");
-        primaryStage.setScene(new Scene(root, 1077, 552));
+        Scene scene = new Scene(root, 1077, 552);
+        primaryStage.setScene(scene);
         primaryStage.show();
+        initComponents(scene);
         insertFromFile();
-        //search.setOnAction(event1 -> {
-        //    System.out.println(word.getText());
-        //});
+
+        loadWordOnList();
+
     }
-    public static void main(String[] args) {
-        launch(args);
+
+    public void initComponents(Scene scene) {
+        definitionWord = (WebView) scene.lookup("#definitionWord");
+        listWord = (ListView<String>) scene.lookup("#listWord");
+    }
+    
+    public void loadWordOnList() {
+            listWord.setOnMouseClicked(event1 -> {
+                String key = listWord.getSelectionModel().getSelectedItem();
+                if (!key.isEmpty()){
+                    webEngine = definitionWord.getEngine();
+                    String content = dictionaryLookup(key);
+                    webEngine.loadContent(content);
+                }
+
+            });
+
     }
 }
