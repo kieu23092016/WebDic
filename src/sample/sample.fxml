@@ -106,7 +106,7 @@
                         </ImageView>
                      </graphic>
                   </Button>
-                  <Button id="Button5" mnemonicParsing="false" prefHeight="52.0" prefWidth="60.0" stylesheets="@../css/css1.css">
+                  <Button id="Button5" mnemonicParsing="false" onAction="#exportToFile" prefHeight="52.0" prefWidth="60.0" stylesheets="@../css/css1.css">
                      <graphic>
                         <ImageView fitHeight="47.0" fitWidth="33.0">
                            <image>

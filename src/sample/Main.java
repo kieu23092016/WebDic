@@ -13,19 +13,14 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.io.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Main extends Application {
 
-    private WebEngine webEngine;
+    private static WebEngine webEngine;
     @FXML
     private TextField word;
     @FXML
@@ -41,11 +36,24 @@ public class Main extends Application {
     @FXML
     private TextArea editMeaning;
 
-    static Map<String, String> myTranslate = new TreeMap<String, String>();
-    static final String DATA_FILE_PATH = "D:\\clone\\WebDic\\src\\sample\\E_V.txt";
-    static final String SPLITTING_CHARACTERS = "<html>";
-    private ObservableList<String> observableList = FXCollections.observableList(new ArrayList<String>());
-    private ObservableList<String> beginListView = FXCollections.observableList(new ArrayList<String>());
+    private static Map<String, String> myTranslate = new TreeMap<String, String>();
+    private static Map<String, String> exportListWords = new HashMap<String, String>();
+    private static final String DATA_FILE_PATH = "D:\\clone\\WebDic\\src\\file\\E_V.txt";
+    private static final String EXPORT_FILE_PATH = "D:\\clone\\WebDic\\src\\file\\file_to_export.txt";
+    private static FileWriter exportFile;
+
+    static {
+        try {
+            exportFile = new FileWriter(EXPORT_FILE_PATH);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static final String SPLITTING_CHARACTERS = "<html>";
+    private static ObservableList<String> observableList = FXCollections.observableList(new ArrayList<String>());
+    private static ObservableList<String> beginListView = FXCollections.observableList(new ArrayList<String>());
+    private static String keyRemove;
 
     public static void main(String[] args) {
         launch(args);
@@ -67,6 +75,21 @@ public class Main extends Application {
     }
 
     /**
+     * xuất dữ liệu ra file.
+     */
+    public void exportToFile() throws IOException {
+        String content = "";
+        BufferedWriter bufferedWriter = new BufferedWriter(exportFile);
+        for (int i = 0; i<exportListWords.size(); i++) {
+            bufferedWriter.write(exportListWords.get(i) + "\n");
+        }
+        Alert exportAlert = new Alert(Alert.AlertType.INFORMATION);
+        exportAlert.setHeaderText("Export successfully!");
+        exportAlert.setContentText("You have searched "+exportListWords.size()+" words.\n");
+        exportAlert.showAndWait();
+    }
+
+    /**
      * tìm kiếm chính xác nghĩa của 1 từ tiếng Anh.
      */
     public String dictionaryLookup(String key) {
@@ -79,8 +102,10 @@ public class Main extends Application {
      * tìm kiếm gần đúng một từ.
      */
     public void submit(ActionEvent event) {
+        Alert notFound = new Alert(Alert.AlertType.INFORMATION);
         if (!word.getText().isEmpty()) {
             String textSearch = word.getText();
+            notFound.setHeaderText("[ " + textSearch + " ]" + " not found.");
             Pattern pattern = Pattern.compile("\\b" + textSearch, Pattern.CASE_INSENSITIVE);
             if (!observableList.isEmpty()) {
                 observableList.clear();
@@ -93,6 +118,16 @@ public class Main extends Application {
                 }
             }
             listWord.setItems(observableList);
+            if (observableList.isEmpty()) {
+                notFound.showAndWait();
+            } else if (!observableList.isEmpty()){
+                webEngine.loadContent(myTranslate.get(observableList.get(0)));
+                // TODO: add to list to export to file.
+                exportListWords.put(textSearch, myTranslate.get(textSearch));
+            }
+        } else {
+            notFound.setHeaderText("Word has not been entered.");
+            notFound.showAndWait();
         }
     }
 
@@ -110,10 +145,7 @@ public class Main extends Application {
             Optional<ButtonType> optionalButtonType = alert.showAndWait();
             Alert child_alert = new Alert(Alert.AlertType.INFORMATION);
             if (optionalButtonType.get() == ButtonType.OK) {
-                myTranslate.remove(key);
-
-                reLoadListView(key);
-
+                removeKeyAndReLoadListView(key);
                 child_alert.setHeaderText("Delete Successfully!");
                 child_alert.showAndWait();
             }
@@ -124,9 +156,8 @@ public class Main extends Application {
      * mở hành động sửa dữ liệu của 1 từ tiếng Anh.
      */
     public void edit(ActionEvent event) throws IOException {
-
-        String key = listWord.getSelectionModel().getSelectedItem();
-        if (!key.isEmpty()) {
+        keyRemove = listWord.getSelectionModel().getSelectedItem();
+        if (!keyRemove.isEmpty()) {
             /**
              * tạo một cửa sổ mới để sửa từ. ***********************
              */
@@ -140,11 +171,8 @@ public class Main extends Application {
             editWord = (TextField) secondScene.lookup("#editWord");
             editMeaning = (TextArea) secondScene.lookup("#editMeaning");
             /********************************************************/
-            editWord.setText(key);
-            editMeaning.setText(myTranslate.get(key));
-
-            myTranslate.remove(key);
-            reLoadListView(key);
+            editWord.setText(keyRemove);
+            //editMeaning.setText(myTranslate.get(keyRemove));
         }
     }
 
@@ -155,8 +183,12 @@ public class Main extends Application {
         if (!editWord.getText().isEmpty() && !editMeaning.getText().isEmpty()) {
             String k = editWord.getText();
             String v = editMeaning.getText();
+
+            removeKeyAndReLoadListView(keyRemove);
+
             myTranslate.put(k, v);
-            beginListView.add(k);
+            observableList.add(k);
+            beginListView.setAll(myTranslate.keySet());
 
             Alert editingInfo = new Alert(Alert.AlertType.INFORMATION);
             editingInfo.setContentText("Edit successfully!");
@@ -172,7 +204,7 @@ public class Main extends Application {
          * tạo 1 cửa sổ mới để thêm từ tiếng Anh.***************
          */
         Stage secondStage = new Stage();
-        Parent root1 = FXMLLoader.load(getClass().getResource("child.fxml"));
+        Parent root1 = FXMLLoader.load(getClass().getResource("addWindow.fxml"));
         Scene secondScene = new Scene(root1);
         secondStage.setScene(secondScene);
         secondStage.setTitle("Add a word");
@@ -183,7 +215,7 @@ public class Main extends Application {
     }
 
     /**
-     * lưu hành động sửa.
+     * lưu hành động thêm từ.
      */
     public void saveAdd(ActionEvent event) {
         if (!addedWord.getText().isEmpty() && !meaningText.getText().isEmpty()) {
@@ -191,6 +223,7 @@ public class Main extends Application {
             String value = meaningText.getText();
             myTranslate.put(key, value);
             observableList.add(key);
+            beginListView.setAll(myTranslate.keySet());
 
             Alert addingInfo = new Alert(Alert.AlertType.INFORMATION);
             addingInfo.setContentText("Add successfully!");
@@ -216,6 +249,7 @@ public class Main extends Application {
         insertFromFile();
 
         initComponents(scene);
+        showAllWords();
         loadWordOnList();
 
     }
@@ -244,10 +278,10 @@ public class Main extends Application {
     /**
      * cập nhật lại list view khi xóa một từ.
      */
-    public void reLoadListView(String key) {
+    public void removeKeyAndReLoadListView(String key) {
+        myTranslate.remove(key);
         observableList.remove(key);
         beginListView.remove(key);
-        webEngine = definitionWord.getEngine();
         webEngine.loadContent("");
     }
 }

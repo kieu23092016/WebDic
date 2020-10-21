@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="480.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Main">
+   <children>
+      <TextField fx:id="addedWord" alignment="TOP_LEFT" layoutX="181.0" layoutY="27.0" prefHeight="30.0" prefWidth="251.0" />
+      <Label layoutX="17.0" layoutY="27.0" prefHeight="30.0" prefWidth="153.0" text="English:" textFill="#3d0c82">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label layoutX="17.0" layoutY="83.0" prefHeight="30.0" prefWidth="133.0" text="Vietnamese:" textFill="#2b8610">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <TextArea fx:id="meaningText" layoutX="181.0" layoutY="83.0" prefHeight="76.0" prefWidth="251.0" />
+      <Button fx:id="saveButton" layoutX="211.0" layoutY="189.0" mnemonicParsing="false" onAction="#saveAdd" prefHeight="36.0" prefWidth="103.0" text="Save" />
+      <Button layoutX="331.0" layoutY="189.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="89.0" text="Cancel" />
+   </children>
+</AnchorPane>
