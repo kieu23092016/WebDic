@@ -7,21 +7,6 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.*?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.TreeView?>
-<?import javafx.scene.effect.InnerShadow?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.web.WebView?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="750.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Main">
    <children>
@@ -32,7 +17,7 @@
       </ImageView>
       <HBox layoutX="58.0" layoutY="153.0" prefHeight="69.0" prefWidth="446.0">
          <children>
-            <TextField id="TextField1" fx:id="word" minHeight="-Infinity" minWidth="-Infinity" prefHeight="49.0" prefWidth="354.0" promptText="Search Enghlish" style="-fx-background-color: #FFFFFF;" stylesheets="@../css/css1.css">
+            <TextField id="TextField1" fx:id="word" minHeight="-Infinity" minWidth="-Infinity" onKeyTyped="#setOnKey" prefHeight="49.0" prefWidth="354.0" promptText="Search English" style="-fx-background-color: #FFFFFF;" stylesheets="@../css/css1.css">
                <opaqueInsets>
                   <Insets left="12.0" />
                </opaqueInsets>

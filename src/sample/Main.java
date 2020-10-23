@@ -9,11 +9,15 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,21 +42,16 @@ public class Main extends Application {
 
     private static Map<String, String> myTranslate = new TreeMap<String, String>();
     private static Map<String, String> exportListWords = new HashMap<String, String>();
-    private static final String DATA_FILE_PATH = "D:\\clone\\WebDic\\src\\file\\E_V.txt";
-    private static final String EXPORT_FILE_PATH = "D:\\clone\\WebDic\\src\\file\\file_to_export.txt";
-    private static FileWriter exportFile;
-
-    static {
-        try {
-            exportFile = new FileWriter(EXPORT_FILE_PATH);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static final String SPLITTING_CHARACTERS = "<html>";
     private static ObservableList<String> observableList = FXCollections.observableList(new ArrayList<String>());
     private static ObservableList<String> beginListView = FXCollections.observableList(new ArrayList<String>());
+    private static ObservableList<String> searchList = FXCollections.observableList(new ArrayList<String>());
+
+    private static final String SPLITTING_CHARACTERS = "<html>";
+    private static final String DATA_FILE_PATH = "D:\\clone\\WebDic\\src\\file\\E_V.txt";
+    private static final String EXPORT_FILE_PATH = "D:\\clone\\WebDic\\src\\file\\download.txt";
+
+    private static Stage editStage = new Stage();
+    private static Stage addStage = new Stage();
     private static String keyRemove;
 
     public static void main(String[] args) {
@@ -77,16 +76,28 @@ public class Main extends Application {
     /**
      * xuất dữ liệu ra file.
      */
-    public void exportToFile() throws IOException {
-        String content = "";
-        BufferedWriter bufferedWriter = new BufferedWriter(exportFile);
-        for (int i = 0; i<exportListWords.size(); i++) {
-            bufferedWriter.write(exportListWords.get(i) + "\n");
+    public void exportToFile(ActionEvent event) throws IOException {
+        Alert exportQuestion = new Alert(Alert.AlertType.CONFIRMATION);
+        exportQuestion.setHeaderText("you have been searched " + exportListWords.size() + " words.\n"
+                + "Do you want to export your recent searched list?");
+        Optional<ButtonType> optionalButtonType = exportQuestion.showAndWait();
+        if (optionalButtonType.get() == ButtonType.OK) {
+            try {
+                FileWriter writer = new FileWriter(EXPORT_FILE_PATH);
+                for (String key : exportListWords.keySet()) {
+                    writer.write(key + "\n" + exportListWords.get(key) + "\n");
+                }
+                writer.close();
+            } catch (IOException e) {
+                System.out.println("an error occured");
+                e.printStackTrace();
+            }
+
+            Alert exportInfo = new Alert(Alert.AlertType.INFORMATION);
+            exportInfo.setHeaderText("Export successfully!");
+            exportInfo.setContentText("you have been searched " + exportListWords.size() + " words.");
+            exportInfo.showAndWait();
         }
-        Alert exportAlert = new Alert(Alert.AlertType.INFORMATION);
-        exportAlert.setHeaderText("Export successfully!");
-        exportAlert.setContentText("You have searched "+exportListWords.size()+" words.\n");
-        exportAlert.showAndWait();
     }
 
     /**
@@ -120,7 +131,7 @@ public class Main extends Application {
             listWord.setItems(observableList);
             if (observableList.isEmpty()) {
                 notFound.showAndWait();
-            } else if (!observableList.isEmpty()){
+            } else if (!observableList.isEmpty()) {
                 webEngine.loadContent(myTranslate.get(observableList.get(0)));
                 // TODO: add to list to export to file.
                 exportListWords.put(textSearch, myTranslate.get(textSearch));
@@ -129,6 +140,51 @@ public class Main extends Application {
             notFound.setHeaderText("Word has not been entered.");
             notFound.showAndWait();
         }
+    }
+
+    public void setOnKey(KeyEvent event) {
+        word.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null || newValue.isEmpty()) {
+                System.out.println("null" + " " + searchList.size());
+                if (!searchList.isEmpty()) searchList.clear();
+                return;
+            }
+            String textSearch = newValue;
+            Pattern pattern = Pattern.compile("\\b" + textSearch, Pattern.CASE_INSENSITIVE);
+            Matcher matcher;
+
+            if (textSearch.length() == 1) {
+
+                System.out.println("neus text search chi co mot chu cai: " + searchList.size());
+                if (!observableList.isEmpty()) {
+                    observableList.clear();
+                }
+                if (!searchList.isEmpty()) {
+                    searchList.clear();
+                }
+                for (String key : myTranslate.keySet()) {
+                    matcher = pattern.matcher(key);
+                    if (matcher.find()) {
+                        //System.out.println(key);
+                        observableList.add(key);
+                        searchList.add(key);
+                    }
+                }
+            } else if (textSearch.length() > 1) {
+                if (!observableList.isEmpty()) {
+                    observableList.clear();
+                }
+                for (String key : searchList) {
+                    matcher = pattern.matcher(key);
+                    if (matcher.find()) {
+                        //System.out.println(key);
+                        observableList.add(key);
+                    }
+                }
+            }
+
+        });
+        listWord.setItems(observableList);
     }
 
     /**
@@ -161,19 +217,22 @@ public class Main extends Application {
             /**
              * tạo một cửa sổ mới để sửa từ. ***********************
              */
-            Stage secondStage = new Stage();
             Parent root1 = FXMLLoader.load(getClass().getResource("editor.fxml"));
             Scene secondScene = new Scene(root1);
-            secondStage.setScene(secondScene);
-            secondStage.setTitle("Editor");
-
-            secondStage.show();
+            editStage.setScene(secondScene);
+            editStage.setTitle("Editor");
+            editStage.show();
             editWord = (TextField) secondScene.lookup("#editWord");
             editMeaning = (TextArea) secondScene.lookup("#editMeaning");
-            /********************************************************/
+
             editWord.setText(keyRemove);
             //editMeaning.setText(myTranslate.get(keyRemove));
         }
+    }
+
+    // TODO: đóng cửa sổ edit.
+    public void closeEdit(ActionEvent event) {
+        editStage.close();
     }
 
     /**
@@ -192,7 +251,10 @@ public class Main extends Application {
 
             Alert editingInfo = new Alert(Alert.AlertType.INFORMATION);
             editingInfo.setContentText("Edit successfully!");
-            editingInfo.showAndWait();
+            Optional<ButtonType> optionalButtonType = editingInfo.showAndWait();
+            if (optionalButtonType.get() == ButtonType.OK) {
+                editStage.close();
+            }
         }
     }
 
@@ -203,15 +265,16 @@ public class Main extends Application {
         /**
          * tạo 1 cửa sổ mới để thêm từ tiếng Anh.***************
          */
-        Stage secondStage = new Stage();
         Parent root1 = FXMLLoader.load(getClass().getResource("addWindow.fxml"));
         Scene secondScene = new Scene(root1);
-        secondStage.setScene(secondScene);
-        secondStage.setTitle("Add a word");
-        secondStage.show();
-        /**
-         * *****************************************************
-         */
+        addStage.setScene(secondScene);
+        addStage.setTitle("Add a word");
+        addStage.show();
+    }
+
+    // TODO: đóng cửa sổ add.
+    public void closeAdd(ActionEvent event) {
+        addStage.close();
     }
 
     /**
@@ -227,7 +290,10 @@ public class Main extends Application {
 
             Alert addingInfo = new Alert(Alert.AlertType.INFORMATION);
             addingInfo.setContentText("Add successfully!");
-            addingInfo.showAndWait();
+            Optional<ButtonType> optionalButtonType = addingInfo.showAndWait();
+            if (optionalButtonType.get() == ButtonType.OK) {
+                addStage.close();
+            }
         }
     }
 
@@ -251,7 +317,6 @@ public class Main extends Application {
         initComponents(scene);
         showAllWords();
         loadWordOnList();
-
     }
 
     public void initComponents(Scene scene) {
@@ -270,9 +335,7 @@ public class Main extends Application {
                 String content = dictionaryLookup(key);
                 webEngine.loadContent(content);
             }
-
         });
-
     }
 
     /**
