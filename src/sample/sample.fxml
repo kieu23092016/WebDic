@@ -107,5 +107,6 @@
             </VBox>
          </children>
       </AnchorPane>
+      <Button fx:id="Sound" layoutX="519.0" layoutY="175.0" mnemonicParsing="false" onMouseClicked="#Pronounce" text="Âm thanh" />
    </children>
 </AnchorPane>

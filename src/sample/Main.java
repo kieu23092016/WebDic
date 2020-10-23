@@ -1,5 +1,6 @@
 package sample;
 
+import com.sun.speech.freetts.VoiceManager;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -39,6 +41,9 @@ public class Main extends Application {
     private TextField editWord;
     @FXML
     private TextArea editMeaning;
+    @FXML
+    private Button Sound;
+
 
     private static Map<String, String> myTranslate = new TreeMap<String, String>();
     private static Map<String, String> exportListWords = new HashMap<String, String>();
@@ -47,8 +52,8 @@ public class Main extends Application {
     private static ObservableList<String> searchList = FXCollections.observableList(new ArrayList<String>());
 
     private static final String SPLITTING_CHARACTERS = "<html>";
-    private static final String DATA_FILE_PATH = "D:\\clone\\WebDic\\src\\file\\E_V.txt";
-    private static final String EXPORT_FILE_PATH = "D:\\clone\\WebDic\\src\\file\\download.txt";
+    private static final String DATA_FILE_PATH = "C:\\Users\\ASUS\\IdeaProjects\\Tudien\\WebDic\\src\\file\\E_V.txt";
+    private static final String EXPORT_FILE_PATH = "C:\\Users\\ASUS\\IdeaProjects\\Tudien\\WebDic\\src\\file\\download.txt";
 
     private static Stage editStage = new Stage();
     private static Stage addStage = new Stage();
@@ -144,36 +149,37 @@ public class Main extends Application {
 
     public void setOnKey(KeyEvent event) {
         word.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue == null || newValue.isEmpty()) {
-                System.out.println("null" + " " + searchList.size());
-                if (!searchList.isEmpty()) searchList.clear();
-                return;
-            }
             String textSearch = newValue;
-            Pattern pattern = Pattern.compile("\\b" + textSearch, Pattern.CASE_INSENSITIVE);
-            Matcher matcher;
-
-            if (textSearch.length() == 1) {
-
-                System.out.println("neus text search chi co mot chu cai: " + searchList.size());
-                if (!observableList.isEmpty()) {
-                    observableList.clear();
-                }
+            System.out.println("TU CAN TIM DAY: "+textSearch);
+            if (textSearch == null || textSearch.isEmpty()) {
+                System.out.println("null"+" " + searchList.size());
                 if (!searchList.isEmpty()) {
                     searchList.clear();
+                    System.out.println("sau khi clear o doan null: "+searchList.size());
                 }
-                for (String key : myTranslate.keySet()) {
-                    matcher = pattern.matcher(key);
-                    if (matcher.find()) {
-                        //System.out.println(key);
-                        observableList.add(key);
-                        searchList.add(key);
+                return;
+            }
+            if (!observableList.isEmpty()) {
+                observableList.clear();
+            }
+            Pattern pattern = Pattern.compile("\\b" + textSearch, Pattern.CASE_INSENSITIVE);
+            Matcher matcher;
+            if (textSearch.length() == 1) {
+                System.out.println("neus text search chi co mot chu cai: " + searchList.size());
+                if (searchList.isEmpty()) {
+                    System.out.println("-.- Dang load tu dau search list.");
+                    for (String key : myTranslate.keySet()) {
+                        matcher = pattern.matcher(key);
+                        if (matcher.find()) {
+                            //System.out.println(key);
+                            observableList.add(key);
+                            searchList.add(key);
+                        }
                     }
                 }
-            } else if (textSearch.length() > 1) {
-                if (!observableList.isEmpty()) {
-                    observableList.clear();
-                }
+                System.out.println(">0 kiem tra size cua list khi co 1 chu cai: "+searchList.size());
+            } else if (textSearch.length() >= 2) {
+                System.out.println("===Dang tim day, co du hon 2 chu cai roi.");
                 for (String key : searchList) {
                     matcher = pattern.matcher(key);
                     if (matcher.find()) {
@@ -182,11 +188,9 @@ public class Main extends Application {
                     }
                 }
             }
-
         });
         listWord.setItems(observableList);
     }
-
     /**
      * xóa một từ tiếng Anh khỏi từ điển.
      */
@@ -346,5 +350,18 @@ public class Main extends Application {
         observableList.remove(key);
         beginListView.remove(key);
         webEngine.loadContent("");
+    }
+    public void Pronounce(MouseEvent mouseEvent){
+        String  text = listWord.getSelectionModel().getSelectedItem();
+        if(text == null || text.isEmpty()) {
+            System.out.println("NULL");
+            return;
+        }
+        System.out.println(text);
+        VoiceManager voiceManager = VoiceManager.getInstance();
+        com.sun.speech.freetts.Voice synthersizer = voiceManager.getVoice("kevin16");
+        synthersizer.allocate();
+        synthersizer.speak(text);
+        synthersizer.deallocate();
     }
 }
