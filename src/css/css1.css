@@ -1,6 +1,11 @@
 #TextField1 {
     -fx-font-size: 18px;
+    -fx-background-color: #080169;
     -fx-border-color: #080169;
+}
+
+#ButtonSound {
+    -fx-background-color: #FFFFFF;
 }
 
 #Button1 {
@@ -9,18 +14,9 @@
     -fx-text-fill: #FFD96D;
 }
 
-#Button2 {
+#ButtonMenu {
     -fx-background-color: #080169;
 }
 #Anchor1{
-    -fx-background-color: #080169;
-}
-#Button3{
-    -fx-background-color: #080169;
-}
-#Button4{
-    -fx-background-color: #080169;
-}
-#Button5{
     -fx-background-color: #080169;
 }

@@ -41,19 +41,16 @@ public class Main extends Application {
     private TextField editWord;
     @FXML
     private TextArea editMeaning;
-    @FXML
-    private Button Sound;
-
 
     private static Map<String, String> myTranslate = new TreeMap<String, String>();
     private static Map<String, String> exportListWords = new HashMap<String, String>();
     private static ObservableList<String> observableList = FXCollections.observableList(new ArrayList<String>());
     private static ObservableList<String> beginListView = FXCollections.observableList(new ArrayList<String>());
-    private static ObservableList<String> searchList = FXCollections.observableList(new ArrayList<String>());
+    private ObservableList<String> searchList = FXCollections.observableList(new ArrayList<String>());
 
     private static final String SPLITTING_CHARACTERS = "<html>";
-    private static final String DATA_FILE_PATH = "C:\\Users\\ASUS\\IdeaProjects\\Tudien\\WebDic\\src\\file\\E_V.txt";
-    private static final String EXPORT_FILE_PATH = "C:\\Users\\ASUS\\IdeaProjects\\Tudien\\WebDic\\src\\file\\download.txt";
+    private static final String DATA_FILE_PATH = "D:\\clone_du_phong\\WebDic\\src\\file\\E_V.txt";
+    private static final String EXPORT_FILE_PATH = "D:\\clone_du_phong\\WebDic\\src\\file\\download.txt";
 
     private static Stage editStage = new Stage();
     private static Stage addStage = new Stage();
@@ -115,42 +112,40 @@ public class Main extends Application {
     }
 
     /**
-     * tìm kiếm gần đúng một từ.
+     * tìm kiếm một từ.
      */
     public void submit(ActionEvent event) {
         Alert notFound = new Alert(Alert.AlertType.INFORMATION);
         if (!word.getText().isEmpty()) {
             String textSearch = word.getText();
             notFound.setHeaderText("[ " + textSearch + " ]" + " not found.");
-            Pattern pattern = Pattern.compile("\\b" + textSearch, Pattern.CASE_INSENSITIVE);
             if (!observableList.isEmpty()) {
                 observableList.clear();
             }
-            for (String key : myTranslate.keySet()) {
-                Matcher matcher = pattern.matcher(key);
-                if (matcher.find()) {
-                    System.out.println(key);
-                    observableList.add(key);
-                }
-            }
-            listWord.setItems(observableList);
-            if (observableList.isEmpty()) {
-                notFound.showAndWait();
-            } else if (!observableList.isEmpty()) {
-                webEngine.loadContent(myTranslate.get(observableList.get(0)));
+            if (myTranslate.containsKey(textSearch)) {
+                observableList.add(textSearch);
                 // TODO: add to list to export to file.
                 exportListWords.put(textSearch, myTranslate.get(textSearch));
+            } else {
+                notFound.showAndWait();
             }
+            listWord.setItems(observableList);
         } else {
             notFound.setHeaderText("Word has not been entered.");
             notFound.showAndWait();
         }
     }
 
+    /**
+     * search when press keyboard.
+     */
     public void setOnKey(KeyEvent event) {
         word.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!observableList.isEmpty()) {
+                observableList.clear();
+            }
             String textSearch = newValue;
-            System.out.println("TU CAN TIM DAY: "+textSearch);
+            System.out.println("TU CAN TIM DAY: "+textSearch+"\n Old value is: "+oldValue);
             if (textSearch == null || textSearch.isEmpty()) {
                 System.out.println("null"+" " + searchList.size());
                 if (!searchList.isEmpty()) {
@@ -158,9 +153,6 @@ public class Main extends Application {
                     System.out.println("sau khi clear o doan null: "+searchList.size());
                 }
                 return;
-            }
-            if (!observableList.isEmpty()) {
-                observableList.clear();
             }
             Pattern pattern = Pattern.compile("\\b" + textSearch, Pattern.CASE_INSENSITIVE);
             Matcher matcher;
@@ -170,7 +162,7 @@ public class Main extends Application {
                     System.out.println("-.- Dang load tu dau search list.");
                     for (String key : myTranslate.keySet()) {
                         matcher = pattern.matcher(key);
-                        if (matcher.find()) {
+                        if (key.charAt(0)==textSearch.charAt(0) && matcher.find()) {
                             //System.out.println(key);
                             observableList.add(key);
                             searchList.add(key);
@@ -182,7 +174,7 @@ public class Main extends Application {
                 System.out.println("===Dang tim day, co du hon 2 chu cai roi.");
                 for (String key : searchList) {
                     matcher = pattern.matcher(key);
-                    if (matcher.find()) {
+                    if (key.charAt(0)==textSearch.charAt(0) && matcher.find()) {
                         //System.out.println(key);
                         observableList.add(key);
                     }
@@ -315,11 +307,10 @@ public class Main extends Application {
         primaryStage.setTitle("Dictionary");
         Scene scene = new Scene(root, 1200, 700);
         primaryStage.setScene(scene);
-        primaryStage.show();
         insertFromFile();
-
         initComponents(scene);
         showAllWords();
+        primaryStage.show();
         loadWordOnList();
     }
 
@@ -351,6 +342,10 @@ public class Main extends Application {
         beginListView.remove(key);
         webEngine.loadContent("");
     }
+
+    /**
+     * phát âm.
+     */
     public void Pronounce(MouseEvent mouseEvent){
         String  text = listWord.getSelectionModel().getSelectedItem();
         if(text == null || text.isEmpty()) {

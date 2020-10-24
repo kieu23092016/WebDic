@@ -1,0 +1,14 @@
+#TextField1 {
+    -fx-font-size: 17px;
+}
+
+#Button1 {
+    -fx-background-color: #FFF01F;
+    -fx-font-size: 15px;
+    -fx-text-fill: #080169;
+}
+#Button2 {
+    -fx-background-color: #FFF01F;
+    -fx-font-size: 15px;
+    -fx-text-fill: #080169;
+}
